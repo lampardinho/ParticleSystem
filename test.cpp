@@ -67,13 +67,13 @@ void Particle::Update(const Particle& lastState, float time)
 	Vector2 vel = lastState.m_vel;
 	bool vis = lastState.isVisible;
 	
-	if (isNew)
-	{
-		isNew = false;
-		pos = m_pos;
-		vel = m_vel;
-		vis = isVisible;
-	}
+//	if (isNew)
+//	{
+//		isNew = false;
+//		pos = m_pos;
+//		vel = m_vel;
+//		vis = isVisible;
+//	}
 
 	if (pos.x < 0 || pos.x > test::SCREEN_WIDTH)
 		isVisible = false;
@@ -183,7 +183,7 @@ CParticleManager::~CParticleManager()
 		if (buffers[i])
 			delete[] buffers[i];
 	}
-}
+ } //exception
 
 void CParticleManager::Init(int n)
 {
@@ -299,7 +299,9 @@ void CParticleManager::SwapRenderBuffer()
 		return;
 
 	nextToUpdateBufferId = renderBufferId;
-	renderBufferId = lastUpdatedBufferId;
+//	renderBufferId = lastUpdatedBufferId;
+
+	std::memcpy(buffers[renderBufferId], buffers[lastUpdatedBufferId], sizeof buffers[lastUpdatedBufferId]);
 
 	std::cout << "render: " << renderBufferId << "\tlast updated: " << lastUpdatedBufferId << "\tcurrent: " << currentUpdatingBufferId << "\tnext: " << nextToUpdateBufferId << " render\n";
 }
@@ -314,7 +316,7 @@ void CParticleManager::SwapUpdateBuffer()
 	
 	std::cout << "render: " << renderBufferId << "\tlast updated: " << lastUpdatedBufferId << "\tcurrent: " << currentUpdatingBufferId << "\tnext: " << nextToUpdateBufferId << " update\n";
 
-	buffers[currentUpdatingBufferId]->nextDeadParticleId = buffers[lastUpdatedBufferId]->nextDeadParticleId;
+	std::memcpy(buffers[currentUpdatingBufferId], buffers[lastUpdatedBufferId], sizeof buffers[lastUpdatedBufferId]);
 }
 
 

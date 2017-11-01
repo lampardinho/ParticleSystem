@@ -47,7 +47,7 @@
     <ClInclude Include="ParticleEffect.h" />
     <ClInclude Include="ParticleManager.h" />
     <ClInclude Include="test.h" />
-    <ClInclude Include="vector2.h" />
+    <ClInclude Include="Vector2.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B3FFBEF9-7B94-488A-98BE-0079263B9E95}</ProjectGuid>

@@ -1,9 +1,5 @@
-#include <stdlib.h>
-
 #include "ParticleEffect.h"
 #include "test.h"
-#include <iostream>
-
 
 void Particle::Update(float time, float gravity)
 {
@@ -37,7 +33,6 @@ void ParticleEffect::Init(int n, float gravity, float particleMaxInitialVelocity
 
 	particles = new Particle[n];
 	count = n;
-	birthTime = -1;
 
 	for (int i = 0; i < count; i++)
 	{
@@ -75,7 +70,7 @@ void ParticleEffect::Emit(int x, int y, float time)
 		particles[i].isVisible = true;
 		particles[i].position = Vector2(x, y);
 		particles[i].velocity = Vector2(rand() % 101 - 50, rand() % 101 - 50);
-		particles[i].velocity = particles[i].velocity.Normal();
+		particles[i].velocity = particles[i].velocity.Normalize();
 		particles[i].velocity = particles[i].velocity * (rand() % particleMaxInitialVelocity);
 	}
 }
@@ -91,5 +86,9 @@ void ParticleEffect::Destroy(std::function<void(int, int, float)> emitFunc, floa
 
 		if (rand() % 101 < emitOnDestroyProbability * 100)
 			emitFunc(particles[i].position.x, particles[i].position.y, time);
+
+		particles[i].position = Vector2(0.0, 0.0);
+		particles[i].velocity = Vector2(0.0, 0.0);
+		particles[i].isVisible = false;
 	}
 }

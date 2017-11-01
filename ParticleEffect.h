@@ -1,6 +1,7 @@
 #pragma once
 
-#include "vector2.h"
+#include "Vector2.h"
+
 #include <functional>
 
 class Particle
@@ -23,12 +24,12 @@ public:
 	void Emit(int x, int y, float time);
 	void Destroy(std::function<void(int, int, float)> emitFunc, float time);
 
-	Particle* particles;
-	float birthTime;
+	Particle* particles = nullptr;
+	float birthTime = -1;
 
 private:
-	int count;
-	float gravity;
-	int particleMaxInitialVelocity;
-	float emitOnDestroyProbability;
+	int count = 0;
+	float gravity = 0;
+	int particleMaxInitialVelocity = 0;
+	float emitOnDestroyProbability = 0;
 };

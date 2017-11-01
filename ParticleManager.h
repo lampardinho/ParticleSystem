@@ -1,7 +1,8 @@
 #pragma once
 
-#include<mutex>
-#include<ParticleEffect.h>
+#include <mutex>
+
+class ParticleEffect;
 
 class ParticleBuffer
 {
@@ -26,13 +27,14 @@ public:
 
 	ParticleBuffer* buffers[3];
 	std::mutex swapMutex;
+	std::mutex emitMutex;
 	int currentUpdatingBufferId = 2;
 
 private:
-	int	effectsCount;
+	int	effectsCount = 0;
 	int renderBufferId = 0;
 	int lastUpdatedBufferId = 1;
 	int nextToUpdateBufferId = 1;
-	int particleLifetime;
+	int particleLifetime = 0;
 };
 

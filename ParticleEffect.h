@@ -1,7 +1,9 @@
 #pragma once
 
 #include "vector2.h"
-#include "ParticleManager.h"
+#include <functional>
+
+//#include "ParticleManager.h"
 
 class Particle
 {
@@ -30,5 +32,5 @@ public:
 	void Init(int n, float gravity, float particleMaxInitialVelocity, float emitOnDestroyProbability);
 	void Render();
 	void Emit(int x, int y, float time);
-	void Destroy(std::function<void(int, int, float)> emitFunc);
+	void Destroy(std::function<void(int, int, float)> emitFunc, float time);
 };

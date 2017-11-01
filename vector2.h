@@ -23,6 +23,7 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include <math.h>
 
 class Vector2
 {
@@ -56,7 +57,7 @@ Vector2		operator* ( const float s, const Vector2& v );
 Vector2		operator/ ( const Vector2& v, const float s );
 Vector2		operator- ( const Vector2& v );
 
-float       DotProduct( const Vector2& v1, const Vector2& v2 ) {return v1.x*v2.x + v1.y*v2.y;} 
+inline float       DotProduct( const Vector2& v1, const Vector2& v2 ) {return v1.x*v2.x + v1.y*v2.y;} 
 
 inline Vector2::Vector2 ( ) 
 {

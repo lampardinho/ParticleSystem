@@ -1,8 +1,9 @@
 #include <stdlib.h>
 
 #include "ParticleEffect.h"
-#include "ParticleManager.h"
+//#include "ParticleManager.h"
 #include "test.h"
+#include <iostream>
 
 
 void Particle::Update(float time, float gravity)
@@ -33,6 +34,7 @@ void ParticleEffect::Init(int n, float gravity, float particleMaxInitialVelocity
 {
 	this->particleMaxInitialVelocity = particleMaxInitialVelocity;
 	this->emitOnDestroyProbability = emitOnDestroyProbability;
+	this->gravity = gravity;
 
 	particles = new Particle[n];
 	count = n;
@@ -59,7 +61,9 @@ void ParticleEffect::Render()
 	for (int i = 0; i < count; i++)
 	{
 		if (particles[i].isVisible)
+		{
 			platform::drawPoint(particles[i].m_pos.x, particles[i].m_pos.y, 1, 1, 1, 1);
+		}
 	}
 }
 
@@ -77,7 +81,7 @@ void ParticleEffect::Emit(int x, int y, float time)
 	}
 }
 
-void ParticleEffect::Destroy(std::function<void(int, int, float)> emitFunc) //no time passed
+void ParticleEffect::Destroy(std::function<void(int, int, float)> emitFunc, float time)
 {
 	birthTime = -1;
 
@@ -87,6 +91,6 @@ void ParticleEffect::Destroy(std::function<void(int, int, float)> emitFunc) //no
 			continue;
 
 		if (rand() % 101 < emitOnDestroyProbability * 100)
-			emitFunc(particles[i].m_pos.x, particles[i].m_pos.y);
+			emitFunc(particles[i].m_pos.x, particles[i].m_pos.y, time);
 	}
 }

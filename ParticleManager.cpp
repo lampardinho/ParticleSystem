@@ -1,6 +1,6 @@
 #include "ParticleManager.h"
-#include "ParticleEffect.h"
 #include "./nvToolsExt.h"
+#include <iostream>
 
 ParticleManager::ParticleManager()
 {
@@ -10,8 +10,6 @@ ParticleManager::ParticleManager()
 	}
 
 	m_num_particles = 0;
-
-
 }
 
 ParticleManager::~ParticleManager()
@@ -19,9 +17,12 @@ ParticleManager::~ParticleManager()
 	for (int i = 0; i < 3; ++i)
 	{
 		if (buffers[i])
+		{
 			delete[] buffers[i];
+			buffers[i] = nullptr;
+		}
 	}
-} //exception
+}
 
 void ParticleManager::Init(int n, int particlesPerEffectCount, int particleLifetime, float gravity, float particleMaxInitialVelocity, float emitOnDestroyProbability)
 {
@@ -48,7 +49,6 @@ void ParticleManager::Update(int first, int end, float dt, float time)
 	nvtxRangePush(__FUNCTION__);
 
 	ParticleBuffer* buffer = buffers[currentUpdatingBufferId];
-	int count = buffer->activeParticlesCount;
 	int last = buffer->lastParticleId;
 
 	for (int index = first; index < end; index++)
@@ -57,7 +57,7 @@ void ParticleManager::Update(int first, int end, float dt, float time)
 
 		if (buffer->effects[i].birthTime > 0 && buffer->effects[i].birthTime + particleLifetime < time)
 		{
-			buffer->effects[i].Destroy(std::bind(&ParticleManager::Emit, *this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+			buffer->effects[i].Destroy(std::bind(&ParticleManager::Emit, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), time);
 			buffer->lastParticleId = (buffer->lastParticleId + 1) % m_num_particles;
 			buffer->activeParticlesCount--;
 			continue;
@@ -71,8 +71,6 @@ void ParticleManager::Update(int first, int end, float dt, float time)
 
 void ParticleManager::Render()
 {
-	//	std::lock_guard<std::mutex> lock(mutex_);
-
 	ParticleBuffer* buffer = buffers[renderBufferId];
 	for (int index = 0; index < buffer->activeParticlesCount; index++)
 	{
@@ -83,10 +81,9 @@ void ParticleManager::Render()
 
 void ParticleManager::Emit(int x, int y, float time)
 {
+	std::lock_guard<std::mutex> lock(mutex_);	
 
-	//	std::lock_guard<std::mutex> lock(mutex_);
-
-	ParticleBuffer* buffer = buffers[nextToUpdateBufferId];
+	ParticleBuffer* buffer = buffers[currentUpdatingBufferId];
 	buffer->effects[buffer->nextDeadParticleId].Emit(x, y, time);
 
 	buffer->nextDeadParticleId = (buffer->nextDeadParticleId + 1) % m_num_particles;
@@ -95,6 +92,8 @@ void ParticleManager::Emit(int x, int y, float time)
 		buffer->lastParticleId = (buffer->lastParticleId + 1) % m_num_particles;
 	else
 		buffer->activeParticlesCount++;
+
+//	std::cout << buffer->activeParticlesCount << "\n";
 }
 
 void ParticleManager::SwapRenderBuffer()
@@ -105,20 +104,18 @@ void ParticleManager::SwapRenderBuffer()
 		return;
 
 	nextToUpdateBufferId = renderBufferId;
-	//	renderBufferId = lastUpdatedBufferId;
+		renderBufferId = lastUpdatedBufferId;
 
-	std::memcpy(buffers[renderBufferId], buffers[lastUpdatedBufferId], sizeof buffers[lastUpdatedBufferId]);
-
-	//	std::cout << "render: " << renderBufferId << "\tlast updated: " << lastUpdatedBufferId << "\tcurrent: " << currentUpdatingBufferId << "\tnext: " << nextToUpdateBufferId << " render\n";
+//	std::cout << "render: " << renderBufferId << "\tlast updated: " << lastUpdatedBufferId << "\tcurrent: " << currentUpdatingBufferId << "\tnext: " << nextToUpdateBufferId << " render\n";
 }
 
 void ParticleManager::SwapUpdateBuffer()
 {
 	std::lock_guard<std::mutex> lock(mutex_);
-
+	
 	lastUpdatedBufferId = currentUpdatingBufferId;
 	currentUpdatingBufferId = nextToUpdateBufferId;
 	nextToUpdateBufferId = lastUpdatedBufferId;
 
-	std::memcpy(buffers[currentUpdatingBufferId], buffers[lastUpdatedBufferId], sizeof buffers[lastUpdatedBufferId]);
+	std::memcpy(buffers[currentUpdatingBufferId], buffers[lastUpdatedBufferId], sizeof *buffers[lastUpdatedBufferId]);
 }

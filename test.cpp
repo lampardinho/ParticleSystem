@@ -225,7 +225,7 @@ void CParticleManager::Render()
 void CParticleManager::Emit(int x, int y)
 {
 
-//	std::lock_guard<std::mutex> lock(mutex_);
+	std::lock_guard<std::mutex> lock(mutex_);
 
 	ParticleBuffer* buffer = buffers[nextToUpdateBufferId];
 	buffer->effects[buffer->nextDeadParticleId].Emit(x, y);
@@ -420,7 +420,7 @@ void test::update(int dt)
 
 void test::on_click(int x, int y)
 {
-	std::lock_guard<std::mutex> lock(g_ParticleManager.mutex_);
+	//std::lock_guard<std::mutex> lock(g_ParticleManager.mutex_);
 	
 	g_ParticleManager.Emit(x, SCREEN_HEIGHT - y);
 }

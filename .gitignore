@@ -21,3 +21,5 @@ Release
 *.vbproj.user
 ipch
 *sdf
+.vs/ConsoleApplication/v15/Browse.VC.opendb
+.vs/ConsoleApplication/v15/Browse.VC.db

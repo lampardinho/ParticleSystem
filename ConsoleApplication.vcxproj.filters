@@ -97,7 +97,10 @@
     <ClCompile Include="test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Emitter.cpp">
+    <ClCompile Include="ParticleEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -105,13 +108,16 @@
     <ClInclude Include="test.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Emitter.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="vector2.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="CircularBuffer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleEffect.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleManager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

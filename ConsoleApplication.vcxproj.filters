@@ -111,9 +111,6 @@
     <ClInclude Include="vector2.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="CircularBuffer.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="ParticleEffect.h">
       <Filter>Source Files</Filter>
     </ClInclude>

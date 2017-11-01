@@ -44,7 +44,6 @@
     <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CircularBuffer.h" />
     <ClInclude Include="ParticleEffect.h" />
     <ClInclude Include="ParticleManager.h" />
     <ClInclude Include="test.h" />

@@ -1,13 +1,12 @@
 #include <thread>
-//#include <mutex>
 #include <atomic>
+#include <condition_variable>
+#include <future>
 
 #include "./nvToolsExt.h"
 
 #include "test.h"
 #include "ParticleManager.h"
-#include <condition_variable>
-#include <future>
 
 static std::atomic<float> globalTime;
 static volatile bool workerMustExit = false;
@@ -65,13 +64,12 @@ void WorkerThread(void)
 			g_ParticleManager->Update(mid_point, count, dt, time);
 			first_half.get();
 		}
-
-
+		
 		g_ParticleManager->SwapUpdateBuffer();
 
 		if (delta < 10)
 		{
-			int duration = 10 - static_cast<int>(delta/**1000.f*/);
+			int duration = 10 - static_cast<int>(delta);
 			std::this_thread::sleep_for(std::chrono::milliseconds(duration));
 		}
 
@@ -110,7 +108,6 @@ void test::update(int dt)
 
 void test::on_click(int x, int y)
 {
-	//std::lock_guard<std::mutex> lock(g_ParticleManager.mutex_);
 	float time = globalTime.load();
 	g_ParticleManager->Emit(x, SCREEN_HEIGHT - y, time);
 }

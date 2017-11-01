@@ -1,24 +1,23 @@
 #include <stdlib.h>
 
 #include "ParticleEffect.h"
-//#include "ParticleManager.h"
 #include "test.h"
 #include <iostream>
 
 
 void Particle::Update(float time, float gravity)
 {
-	if (m_pos.x < 0 || m_pos.x > test::SCREEN_WIDTH)
+	if (position.x < 0 || position.x > test::SCREEN_WIDTH)
 		isVisible = false;
 
-	if (m_pos.y < 0 || m_pos.y > test::SCREEN_HEIGHT)
+	if (position.y < 0 || position.y > test::SCREEN_HEIGHT)
 		isVisible = false;
 
 	if (!isVisible)
 		return;
 
-	m_pos += m_vel * time;
-	m_vel -= Vector2(0.0f, gravity);	
+	position += velocity * time;
+	velocity.y -= gravity;	
 }
 
 ParticleEffect::~ParticleEffect()
@@ -43,12 +42,12 @@ void ParticleEffect::Init(int n, float gravity, float particleMaxInitialVelocity
 	for (int i = 0; i < count; i++)
 	{
 		particles[i].isVisible = true;
-		particles[i].m_pos = Vector2(0, 0);
-		particles[i].m_vel = Vector2(0, 0);
+		particles[i].position = Vector2(0, 0);
+		particles[i].velocity = Vector2(0, 0);
 	}
 }
 
-void ParticleEffect::Update(const ParticleEffect& lastState, float time)
+void ParticleEffect::Update(float time)
 {
 	for (int i = 0; i < count; ++i)
 	{
@@ -62,7 +61,7 @@ void ParticleEffect::Render()
 	{
 		if (particles[i].isVisible)
 		{
-			platform::drawPoint(particles[i].m_pos.x, particles[i].m_pos.y, 1, 1, 1, 1);
+			platform::drawPoint(particles[i].position.x, particles[i].position.y, 1, 1, 1, 1);
 		}
 	}
 }
@@ -74,10 +73,10 @@ void ParticleEffect::Emit(int x, int y, float time)
 	for (int i = 0; i < count; i++)
 	{
 		particles[i].isVisible = true;
-		particles[i].m_pos = Vector2(x, y);
-		particles[i].m_vel = Vector2(rand() % 101 - 50, rand() % 101 - 50);
-		particles[i].m_vel = particles[i].m_vel.Normal();
-		particles[i].m_vel = particles[i].m_vel * (rand() % particleMaxInitialVelocity);
+		particles[i].position = Vector2(x, y);
+		particles[i].velocity = Vector2(rand() % 101 - 50, rand() % 101 - 50);
+		particles[i].velocity = particles[i].velocity.Normal();
+		particles[i].velocity = particles[i].velocity * (rand() % particleMaxInitialVelocity);
 	}
 }
 
@@ -91,6 +90,6 @@ void ParticleEffect::Destroy(std::function<void(int, int, float)> emitFunc, floa
 			continue;
 
 		if (rand() % 101 < emitOnDestroyProbability * 100)
-			emitFunc(particles[i].m_pos.x, particles[i].m_pos.y, time);
+			emitFunc(particles[i].position.x, particles[i].position.y, time);
 	}
 }

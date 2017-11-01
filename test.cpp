@@ -16,12 +16,7 @@
 #include <condition_variable>
 #include <future>
 
-
-// Just some hints on implementation
-// You could remove all of them
-
 static std::atomic<float> globalTime;
-static std::atomic<int> renderCount;
 static volatile bool workerMustExit = false;
 
 
@@ -45,11 +40,10 @@ void InitializeSettings()
 	g_CurrentSettings.particleMaxInitialVelocity = 100;
 	g_CurrentSettings.particleLifetime = 2000;
 	g_CurrentSettings.gravity = 1;
-	g_CurrentSettings.emitOnDestroyProbability = 0.05;
+	g_CurrentSettings.emitOnDestroyProbability = 0.5;
 }
 
 
-// some code
 class Particle
 {
 
@@ -57,7 +51,6 @@ public:
 	Vector2	m_pos;
 	Vector2	m_vel;
 	bool isVisible = true;
-	bool isNew = false;
 	void	Update(const Particle& lastState, float time);
 };
 
@@ -66,14 +59,6 @@ void Particle::Update(const Particle& lastState, float time)
 	Vector2 pos = lastState.m_pos;	
 	Vector2 vel = lastState.m_vel;
 	bool vis = lastState.isVisible;
-	
-//	if (isNew)
-//	{
-//		isNew = false;
-//		pos = m_pos;
-//		vel = m_vel;
-//		vis = isVisible;
-//	}
 
 	if (pos.x < 0 || pos.x > test::SCREEN_WIDTH)
 		isVisible = false;
@@ -152,12 +137,6 @@ public:
 	int currentUpdatingBufferId = 2;
 	int nextToUpdateBufferId = 1;
 
-//	int lastParticleId;
-//	int nextDeadParticleId;
-//
-//	int activeParticlesCount;
-	bool rendered = false;
-	std::condition_variable cond_var;
 	std::mutex mutex_;
 };
 
@@ -241,20 +220,14 @@ void CParticleManager::Render()
 		int i = (buffer->lastParticleId + index) % m_num_particles;
 		buffer->effects[i].Render();
 	}
-
-	renderCount++;	
 }
 
 void CParticleManager::Emit(int x, int y)
 {
-	std::cout << nextToUpdateBufferId << "\n";
-//
-//	if (activeParticlesCount > m_num_particles)
-//		std::cout << "alert\n";
 
 //	std::lock_guard<std::mutex> lock(mutex_);
 
-	ParticleBuffer* buffer = buffers[currentUpdatingBufferId];
+	ParticleBuffer* buffer = buffers[nextToUpdateBufferId];
 	buffer->effects[buffer->nextDeadParticleId].Emit(x, y);
 
 	buffer->nextDeadParticleId = (buffer->nextDeadParticleId + 1) % m_num_particles;
@@ -263,32 +236,6 @@ void CParticleManager::Emit(int x, int y)
 		buffer->lastParticleId = (buffer->lastParticleId + 1) % m_num_particles;
 	else
 		buffer->activeParticlesCount++;
-
-
-
-
-//	buffer = buffers[currentUpdatingBufferId];
-//	buffer->effects[buffer->nextDeadParticleId].Emit(x, y);
-//
-//	buffer->nextDeadParticleId = (buffer->nextDeadParticleId + 1) % m_num_particles;
-//
-//	if (buffer->nextDeadParticleId == buffer->lastParticleId)
-//		buffer->lastParticleId = (buffer->lastParticleId + 1) % m_num_particles;
-//	else
-//		buffer->activeParticlesCount++;
-//
-//
-//
-//
-//
-//	buffer = buffers[renderBufferId];
-//	buffer->effects[buffer->nextDeadParticleId].Emit(x, y);
-//	buffer->nextDeadParticleId = (buffer->nextDeadParticleId + 1) % m_num_particles;
-//
-//	if (buffer->nextDeadParticleId == buffer->lastParticleId)
-//		buffer->lastParticleId = (buffer->lastParticleId + 1) % m_num_particles;
-//	else
-//		buffer->activeParticlesCount++;
 }
 
 void CParticleManager::SwapRenderBuffer()
@@ -303,7 +250,7 @@ void CParticleManager::SwapRenderBuffer()
 
 	std::memcpy(buffers[renderBufferId], buffers[lastUpdatedBufferId], sizeof buffers[lastUpdatedBufferId]);
 
-	std::cout << "render: " << renderBufferId << "\tlast updated: " << lastUpdatedBufferId << "\tcurrent: " << currentUpdatingBufferId << "\tnext: " << nextToUpdateBufferId << " render\n";
+//	std::cout << "render: " << renderBufferId << "\tlast updated: " << lastUpdatedBufferId << "\tcurrent: " << currentUpdatingBufferId << "\tnext: " << nextToUpdateBufferId << " render\n";
 }
 
 void CParticleManager::SwapUpdateBuffer()
@@ -313,8 +260,6 @@ void CParticleManager::SwapUpdateBuffer()
 	lastUpdatedBufferId = currentUpdatingBufferId;
 	currentUpdatingBufferId = nextToUpdateBufferId;
 	nextToUpdateBufferId = lastUpdatedBufferId;
-	
-	std::cout << "render: " << renderBufferId << "\tlast updated: " << lastUpdatedBufferId << "\tcurrent: " << currentUpdatingBufferId << "\tnext: " << nextToUpdateBufferId << " update\n";
 
 	std::memcpy(buffers[currentUpdatingBufferId], buffers[lastUpdatedBufferId], sizeof buffers[lastUpdatedBufferId]);
 }
@@ -328,7 +273,7 @@ void CParticleManager::SwapUpdateBuffer()
 ParticleEffect::~ParticleEffect()
 {
 	if (particles)
-		delete[] particles; //exception here
+		delete[] particles; //exception
 }
 
 void ParticleEffect::Init(int n)
@@ -368,7 +313,6 @@ void ParticleEffect::Emit(int x, int y)
 
 	for (int i = 0; i < count; i++)
 	{
-		particles[i].isNew = true;
 		particles[i].isVisible = true;
 		particles[i].m_pos = Vector2(x, y);
 		particles[i].m_vel = Vector2(rand() % 101 - 50, rand() % 101 - 50);
@@ -409,16 +353,13 @@ void WorkerThread(void)
 		float delta = time - lastTime;
 		lastTime = time;
 
-		// some code
-//		std::cout << delta << "\n";
-
 		ParticleBuffer* buffer = g_ParticleManager.buffers[g_ParticleManager.currentUpdatingBufferId];
 		int count = buffer->activeParticlesCount;
 
 		int first = 0;
 		float dt = delta / 1000.f;
 
-		unsigned long const max_chunk_size = 25;
+		unsigned long const max_chunk_size = 64;
 		if (count <= max_chunk_size)
 		{
 			g_ParticleManager.Update(first, count, dt);
@@ -432,14 +373,7 @@ void WorkerThread(void)
 		}
 
 
-//		g_ParticleManager.Update(delta / 1000.f);
-
-//		std::unique_lock<std::mutex> lock(g_ParticleManager.mutex_);
-//		while (!g_ParticleManager.rendered) {  // loop to avoid spurious wakeups
-//			g_ParticleManager.cond_var.wait(lock);
-//		}
 		g_ParticleManager.SwapUpdateBuffer();
-//		g_ParticleManager.rendered = false;
 
 		if (delta < 10)
 		{
@@ -454,25 +388,17 @@ void WorkerThread(void)
 
 void test::init(void)
 {
-	// some code
 	InitializeSettings();
 
 	g_ParticleManager.Init(g_CurrentSettings.effectsCount);
 
 	std::thread workerThread(WorkerThread);
-	workerThread.detach(); // Glut + MSVC = join hangs in atexit()
-
-	// some code
-	
+	workerThread.detach(); // Glut + MSVC = join hangs in atexit()		
 }
 
 void test::term(void)
 {
-	// some code
-
 	workerMustExit = true;
-
-	// some code
 }
 
 void test::render(void)
@@ -482,29 +408,14 @@ void test::render(void)
 	float delta = time - lastTime;
 	lastTime = time;
 
-	
-
-	// some code
-//	std::unique_lock<std::mutex> lock(g_ParticleManager.mutex_);
 	g_ParticleManager.Render();
 	g_ParticleManager.SwapRenderBuffer();
-//	g_ParticleManager.rendered = true;
-//	g_ParticleManager.cond_var.notify_one();
-
-	// some code
 }
 
 void test::update(int dt)
 {
-	// some code
-//	std::cout << g_ParticleManager.activeParticlesCount << "\n";
-	
-//	g_ParticleManager.Update(dt / 1000.f);
-
 	float time = globalTime.load();
 	globalTime.store(time + dt);
-
-	// some code
 }
 
 void test::on_click(int x, int y)

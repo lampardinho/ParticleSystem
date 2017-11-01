@@ -55,9 +55,7 @@ void ParticleEffect::Render()
 	for (int i = 0; i < count; i++)
 	{
 		if (particles[i].isVisible)
-		{
 			platform::drawPoint(particles[i].position.x, particles[i].position.y, 1, 1, 1, 1);
-		}
 	}
 }
 

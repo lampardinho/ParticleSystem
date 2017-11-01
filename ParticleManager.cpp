@@ -98,7 +98,7 @@ void ParticleManager::SwapRenderBuffer()
 		return;
 
 	nextToUpdateBufferId = renderBufferId;
-		renderBufferId = lastUpdatedBufferId;
+	renderBufferId = lastUpdatedBufferId;
 }
 
 void ParticleManager::SwapUpdateBuffer()

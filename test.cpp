@@ -29,7 +29,7 @@ void InitializeSettings()
 	settings.particleMaxInitialVelocity = 100;
 	settings.particleLifetime = 2000;
 	settings.gravity = 1;
-	settings.emitOnDestroyProbability = 0.5;
+	settings.emitOnDestroyProbability = 0.1;
 }
 
 void WorkerThread(void)

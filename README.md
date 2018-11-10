@@ -1,6 +1,6 @@
 ﻿# ParticleSystem
 
-Пересчет позиций частиц происходит в отдельном потоке в функции WorkerThread. Для ускорения просчета частиц буфер разбивается на части, которые обновляются асинхронно.
+Update of particles' positions happens in the separate thread in the ```WorkerThread``` function. For speeding up the particles proccesing the buffer is splitted in parts which are updated asynchroniously.
 
 Для избежания зависимости между рендером и апдейтом используется тройная буферизация. В случае, когда рендер занимает много времени и оба остальных буфера успевают обновиться, то в качестве нового текущего берется более старый из них и просчет новых позиций происходит в него.
 

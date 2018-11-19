@@ -2,13 +2,13 @@
 
 Update of particles' positions happens in the separate thread in the ```WorkerThread``` function. For speeding up the particles proccesing the buffer is splitted in parts which are updated asynchroniously.
 
-Для избежания зависимости между рендером и апдейтом используется тройная буферизация. В случае, когда рендер занимает много времени и оба остальных буфера успевают обновиться, то в качестве нового текущего берется более старый из них и просчет новых позиций происходит в него.
+Tripple buffering is used to eliminate dependence between update and render. In case render takes too long and both backbuffers are already filled, the next position calculation results are stored in the older backbuffer.
 
-Синхронизация потоков необходима на время смены буферов и добавления/удаления новых эффектов.
+Thread synchronization is needed during buffers swapping and adding/deleting of particle effects.
 
-Для хранения эффектов используется циклический буфер, так как он предотвращает переполнение, хранит элементы последовательно в памяти и обеспечивает быстрое удаление и добавление, так как элементы упорядочены по времени появления и имеют константную длительность жизни.
+Ring buffer is used to store particles. It cannot overflow, stores its elements sequencially in memmory and provides fast removing and adding operations, since by design the elements are sorted in order of their creation and all have constant lifetime.
 
-При реализации были изучены следующие статьи:
+Following articles were used during the implementation:
 
 http://cowboyprogramming.com/2007/01/05/multithreading-particle-sytems/
 
